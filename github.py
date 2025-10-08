@@ -9,12 +9,10 @@ from datetime import datetime
 SCRIPT_DIR = Path(__file__).parent.resolve()
 
 # ---------------- Helpers ----------------
-def get_month_folders():
-    """Return a list of folder names YYYY-MM-DD for all days in the current month."""
+def get_month_days():
+    """Return a list of day numbers from 1 to today in the current month."""
     now = datetime.now()
-    year, month = now.year, now.month
-    _, num_days = calendar.monthrange(year, month)
-    return [datetime(year, month, day).strftime("%Y-%m-%d") for day in range(1, num_days + 1)]
+    return list(range(1, now.day + 1))
 
 def format_confidence(value):
     """Format confidence value for HTML table cell."""
@@ -43,6 +41,10 @@ def create_html_table_row(row):
 # ---------------- HTML Generation ----------------
 def generate_day_html(folder_path, file_path):
     """Generate HTML for a single day's data."""
+    if not file_path.exists():
+        print(f"File does not exist: {file_path}")
+        return None
+
     try:
         if file_path.suffix == '.xlsx':
             df = pd.read_excel(file_path)
@@ -115,10 +117,9 @@ def generate_day_html(folder_path, file_path):
 def generate_index():
     """Generate main index.html with buttons for all existing day files."""
     month_name = datetime.now().strftime("%B")
-    num_days = calendar.monthrange(datetime.now().year, datetime.now().month)[1]
-
     buttons_html = ""
-    for day in range(1, num_days + 1):
+
+    for day in get_month_days():
         folder_name = datetime(datetime.now().year, datetime.now().month, day).strftime("%Y-%m-%d")
         folder_path = SCRIPT_DIR / folder_name
         if not folder_path.exists():
@@ -174,14 +175,17 @@ def push_to_github():
 
 # ---------------- Main ----------------
 if __name__ == "__main__":
-    folders = get_month_folders()
-    for folder in folders:
-        folder_path = SCRIPT_DIR / folder
-        if not folder_path.exists():
-            continue
-        for file in folder_path.iterdir():
-            if file.suffix in ['.xlsx', '.csv'] and 'combined_confidence' in file.name:
-                generate_day_html(folder_path, file)
+    for day in get_month_days():
+        folder_name = datetime(datetime.now().year, datetime.now().month, day).strftime("%Y-%m-%d")
+        folder_path = SCRIPT_DIR / folder_name
+        os.makedirs(folder_path, exist_ok=True)
+
+        # Check for a file like "DD_combined_confidence.xlsx" in that folder
+        file_path = folder_path / f"{day:02d}_combined_confidence.xlsx"
+        if file_path.exists():
+            generate_day_html(folder_path, file_path)
+        else:
+            print(f"No data file for {folder_name}")
 
     generate_index()
     push_to_github()
