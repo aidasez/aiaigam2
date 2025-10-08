@@ -128,7 +128,7 @@ def generate_index():
             if file.name.endswith('_predictions.html'):
                 buttons_html += f"""
         <a href="{folder_name}/{file.name}" class="w-full py-4 px-6 bg-green-600 hover:bg-green-700 text-white font-bold text-lg rounded-xl shadow-lg transition duration-300 transform hover:scale-[1.03] text-center">
-            View {file.stem.replace('_predictions','')} Predictions
+            View {file.stem.replace('_predictions','.html')} Predictions
         </a>
 """
 
@@ -181,7 +181,7 @@ if __name__ == "__main__":
         os.makedirs(folder_path, exist_ok=True)
 
         # Check for a file like "DD_combined_confidence.xlsx" in that folder
-        file_path = folder_path / f"{day:02d}_predictions"
+        file_path = folder_path / f"{day:02d}_combined_confidence.xlsx"
         if file_path.exists():
             generate_day_html(folder_path, file_path)
         else:
