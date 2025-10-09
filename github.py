@@ -1,47 +1,42 @@
 import os
-import pandas as pd
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime
 import calendar
+import pandas as pd
 import subprocess
 
-# --- Configuration ---
-today = datetime.now()
-
-# Get the script's directory
+# ----------------- Configuration -----------------
 SCRIPT_DIR = Path(__file__).parent.resolve()
+today = datetime.now()
+today_day = today.day
+today_str = today.strftime("%Y-%m-%d")
 
+# Helper: get folder path for a given day number
+def get_day_folder(day_num):
+    folder_name = today.strftime("%Y-%m") + f"-{day_num:02d}"
+    return SCRIPT_DIR / folder_name
+
+# Helper: get save path for a source/file name
+def get_save_path(day_num, file_name):
+    day_folder = get_day_folder(day_num)
+    os.makedirs(day_folder, exist_ok=True)
+    return day_folder / file_name
+
+# ----------------- Month Info -----------------
 def get_month_info():
-    """Returns current month name and total days in month"""
     month_name = today.strftime("%B")
     _, num_days = calendar.monthrange(today.year, today.month)
     return month_name, num_days
 
-def get_day_folder(day_num):
-    """Return folder path for a specific day (YYYY-MM-DD)"""
-    day_date = datetime(today.year, today.month, day_num)
-    folder_name = day_date.strftime("%Y-%m-%d")
-    folder_path = SCRIPT_DIR / folder_name
-    folder_path.mkdir(exist_ok=True)
-    return folder_path
-
-def get_save_path(day_num, source_name="combined_confidence", ext="xlsx"):
-    """Return path for data file for a specific day"""
-    folder = get_day_folder(day_num)
-    filename = f"{day_num:02d}_{source_name}.{ext}"
-    return folder / filename
-
+# ----------------- HTML Table Row -----------------
 def create_html_table_row(row):
     fixture = row.get('Fixture', 'N/A')
     pick = row.get('Pick', 'N/A')
-
     def format_conf(value):
         if pd.isna(value) or str(value).strip() == '':
             return '<td class="px-6 py-4 text-center text-gray-400">N/A</td>'
         s = str(value).strip()
-        display = s if s.endswith('%') else f"{s}%"
-        return f'<td class="px-6 py-4 text-center font-semibold text-blue-600">{display}</td>'
-
+        return f'<td class="px-6 py-4 text-center font-semibold text-blue-600">{s if s.endswith("%") else s+"%"}</td>'
     return f"""
     <tr class="bg-white border-b hover:bg-gray-50 transition-colors duration-150">
         <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{fixture}</td>
@@ -52,87 +47,76 @@ def create_html_table_row(row):
     </tr>
     """
 
-def generate_day_html(day_num):
-    """Generates HTML for a specific day"""
-    data_file = get_save_path(day_num)
-    day_folder = get_day_folder(day_num)
+# ----------------- Generate Daily HTML -----------------
+def generate_html_file(day_num):
+    excel_file = get_save_path(day_num, f"{day_num:02d}_combined_confidence.xlsx")
+    html_file = get_save_path(day_num, f"{day_num:02d}_predictions.html")
 
-    if not data_file.exists():
-        print(f"Skipping {day_folder / data_file.name}: file not found.")
+    if not excel_file.exists():
+        print(f"Skipping {excel_file}: file not found.")
         return
 
     try:
-        df = pd.read_excel(data_file)
+        df = pd.read_excel(excel_file)
     except Exception as e:
-        print(f"Failed to read {data_file}: {e}")
+        print(f"Error reading {excel_file}: {e}")
         return
 
-    table_rows = []
-    for _, row in df.iterrows():
-        if all(col in row for col in ['Fixture', 'Pick', 'AI_Confidence', 'OLBG_Confidence', 'Oddspedia_Confidence']):
-            table_rows.append(create_html_table_row(row))
-
-    all_rows = "".join(table_rows)
-    html_file = day_folder / f"{day_num:02d}_predictions.html"
-
+    rows_html = "".join(create_html_table_row(row) for _, row in df.iterrows())
     html_content = f"""
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{day_num:02d} Predictions</title>
+<title>Predictions for {day_num:02d}</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>body{{font-family:'Inter',sans-serif;min-height:100vh;background:#f7f9fb;}}</style>
 </head>
-<body class="flex flex-col">
+<body class="bg-gray-100 text-gray-800 flex flex-col">
 <div class="container mx-auto p-4 sm:p-6 lg:p-8 flex-grow">
 <header class="text-center mb-8 bg-white p-6 rounded-xl shadow-md">
-<h1 class="text-3xl sm:text-4xl font-extrabold text-indigo-700">Football Predictions</h1>
-<p class="text-md text-gray-600 mt-2">Confidence Levels (Auto-generated)</p>
+<h1 class="text-3xl sm:text-4xl font-extrabold text-indigo-700">Football Predictions {day_num:02d}</h1>
 </header>
-
 <div class="bg-white rounded-xl shadow-lg overflow-hidden">
 <div class="overflow-x-auto">
 <table class="w-full text-sm text-left text-gray-600">
 <thead class="text-xs text-gray-700 uppercase bg-indigo-50/70 border-b border-indigo-200">
 <tr>
-<th class="px-6 py-3 min-w-[250px] font-bold text-indigo-800">Fixture</th>
-<th class="px-6 py-3 font-bold text-indigo-800">Pick</th>
-<th class="px-6 py-3 text-center font-bold text-indigo-800">AI Confidence</th>
-<th class="px-6 py-3 text-center font-bold text-indigo-800">OLBG Confidence</th>
-<th class="px-6 py-3 text-center font-bold text-indigo-800">Oddspedia Confidence</th>
+<th scope="col" class="px-6 py-3 font-bold text-indigo-800">Fixture</th>
+<th scope="col" class="px-6 py-3 font-bold text-indigo-800">Pick</th>
+<th scope="col" class="px-6 py-3 text-center font-bold text-indigo-800">AI Confidence</th>
+<th scope="col" class="px-6 py-3 text-center font-bold text-indigo-800">OLBG Confidence</th>
+<th scope="col" class="px-6 py-3 text-center font-bold text-indigo-800">Oddspedia Confidence</th>
 </tr>
 </thead>
 <tbody>
-{all_rows if all_rows else '<tr><td colspan="5" class="text-center p-8 text-gray-500">No data available</td></tr>'}
+{rows_html if rows_html else '<tr><td colspan="5" class="text-center p-8 text-gray-500">No data found.</td></tr>'}
 </tbody>
 </table>
 </div>
 </div>
 </div>
-
-<footer class="text-center p-4 mt-auto text-sm text-gray-500 bg-white shadow-inner border-t border-gray-200">
-<p>Auto-generated report</p>
-</footer>
 </body>
 </html>
 """
-
     with open(html_file, "w", encoding="utf-8") as f:
         f.write(html_content)
     print(f"Generated {html_file}")
 
+# ----------------- Generate Index -----------------
 def generate_index_file():
     month_name, num_days = get_month_info()
     button_html = ""
-    for day in range(1, today.day + 1):
+
+    for day in range(1, today_day + 1):
         day_folder = get_day_folder(day)
         html_file = day_folder / f"{day:02d}_predictions.html"
         if html_file.exists():
+            # relative path for GitHub Pages
+            relative_path = f"{day_folder.name}/{html_file.name}"
             button_html += f"""
-<a href="{html_file.name}" class="w-full py-4 px-6 bg-green-600 hover:bg-green-700 text-white font-bold text-lg rounded-xl shadow-lg transition duration-300 transform hover:scale-[1.03] text-center">
+<a href="{relative_path}" class="w-full py-4 px-6 bg-green-600 hover:bg-green-700 text-white font-bold text-lg rounded-xl shadow-lg transition duration-300 transform hover:scale-[1.03] text-center">
 View {month_name} {day:02d} Predictions
 </a>
 """
@@ -169,26 +153,37 @@ Run the script to generate missing day files.
         f.write(index_content)
     print(f"Generated {index_path}")
 
+# ----------------- Git Push -----------------
+# ----------------- Git Push -----------------
 def push_to_github():
     try:
+        # Add everything in the repo, not just index.html
         subprocess.run(["git", "add", "."], check=True, capture_output=True, text=True)
-        commit_msg = f"Auto-generated predictions {today.strftime('%Y-%m-%d')}"
+
+        # Check if there are any actual changes
         result = subprocess.run(["git", "diff", "--cached", "--exit-code"], capture_output=True, text=True)
         if result.returncode == 0:
             print("Git: No changes to commit.")
             return
+
+        commit_msg = f"Auto-update predictions and index for {today.strftime('%Y-%m-%d')}"
         subprocess.run(["git", "commit", "-m", commit_msg], check=True, capture_output=True, text=True)
         subprocess.run(["git", "push", "origin", "main"], check=True, capture_output=True, text=True)
-        print("Git: Successfully pushed to GitHub.")
+
+        print("✅ Git: Successfully pushed all updated files and folders to GitHub.")
     except subprocess.CalledProcessError as e:
-        print(f"Git error: {e.stderr}")
+        print(f"❌ Git push failed:\n{e.stderr or e}")
+    except Exception as e:
+        print(f"❌ Unexpected error during Git push: {e}")
 
-def main():
-    # Generate HTML for all days from 1st to today
-    for day in range(1, today.day + 1):
-        generate_day_html(day)
-    generate_index_file()
-    push_to_github()
 
+# ----------------- Main -----------------
 if __name__ == "__main__":
-    main()
+    month_name, num_days = get_month_info()
+    # Generate HTML for all days from 1st to today
+    for day in range(1, today_day + 1):
+        generate_html_file(day)
+    # Generate index in root folder
+    generate_index_file()
+    # Push index to GitHub
+    push_to_github()

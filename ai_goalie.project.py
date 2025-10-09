@@ -569,6 +569,9 @@ def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file):
 
 yesterday = int(today) -1
 yesterday = f"0{str(yesterday)}"
+ai_goalie_get(today)
+olbg_get(today)
+oddspedia_get(today)
 compare_confidence_sources(f"{today}_fixtures.xlsx",f"{today}_olbg_fixtures.xlsx",f"{today}_oddspedia_fixtures.xlsx")
 
 # compare_confidence_sources(f"{yesterday}_fixtures.xlsx","{today}_olbg_fixtures.xlsx","{today}_oddspedia_fixtures.xlsx")
