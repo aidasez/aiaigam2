@@ -156,23 +156,41 @@ Run the script to generate missing day files.
 # ----------------- Git Push -----------------
 # ----------------- Git Push -----------------
 def push_to_github():
-    try:
-        # Add everything in the repo, not just index.html
-        subprocess.run(["git", "add", "."], check=True, capture_output=True, text=True)
+    """Pushes all generated files and folders to GitHub safely (UTF-8 safe for Windows)."""
+    print("\n🚀 Starting Git push process...")
 
-        # Check if there are any actual changes
-        result = subprocess.run(["git", "diff", "--cached", "--exit-code"], capture_output=True, text=True)
-        if result.returncode == 0:
-            print("Git: No changes to commit.")
+    try:
+        # Force UTF-8 for stdout/stderr decoding to avoid cp1252 errors
+        env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
+
+        # Stage all changes
+        subprocess.run(["git", "add", "."], check=True, capture_output=True, text=True, env=env)
+        print("✅ Git: Added all modified and new files.")
+
+        # Check if anything is staged
+        diff_check = subprocess.run(["git", "diff", "--cached", "--exit-code"],
+                                    capture_output=True, text=True, env=env)
+        if diff_check.returncode == 0:
+            print("ℹ️  Git: No new changes to commit.")
             return
 
-        commit_msg = f"Auto-update predictions and index for {today.strftime('%Y-%m-%d')}"
-        subprocess.run(["git", "commit", "-m", commit_msg], check=True, capture_output=True, text=True)
-        subprocess.run(["git", "push", "origin", "main"], check=True, capture_output=True, text=True)
+        # Commit changes
+        commit_msg = f"Auto-update predictions and index for {datetime.now().strftime('%Y-%m-%d')}"
+        subprocess.run(["git", "commit", "-m", commit_msg], check=True, capture_output=True, text=True, env=env)
+        print(f"✅ Git: Committed changes with message: '{commit_msg}'")
 
-        print("✅ Git: Successfully pushed all updated files and folders to GitHub.")
+        # Push to remote
+        subprocess.run(["git", "push", "origin", "main"], check=True, capture_output=True, text=True, env=env)
+        print("🎉 Git: Successfully pushed all updated files and folders to GitHub.")
+
     except subprocess.CalledProcessError as e:
-        print(f"❌ Git push failed:\n{e.stderr or e}")
+        print("❌ Git command failed!")
+        print(f"Command: {e.cmd}")
+        print(f"Return code: {e.returncode}")
+        print(f"Output:\n{e.stdout}")
+        print(f"Error Output:\n{e.stderr}")
+    except FileNotFoundError:
+        print("❌ Git not found. Please ensure Git is installed and added to PATH.")
     except Exception as e:
         print(f"❌ Unexpected error during Git push: {e}")
 
