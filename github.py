@@ -37,6 +37,8 @@ def create_html_table_row(row):
             return '<td class="px-6 py-4 text-center text-gray-400">N/A</td>'
         s = str(value).strip()
         return f'<td class="px-6 py-4 text-center font-semibold text-blue-600">{s if s.endswith("%") else s+"%"}</td>'
+    def format_odds(value):
+        return '<td class="px-6 py-4 text-center text-gray-400">N/A</td>'
     return f"""
     <tr class="bg-white border-b hover:bg-gray-50 transition-colors duration-150">
         <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{fixture}</td>
@@ -44,8 +46,8 @@ def create_html_table_row(row):
         {format_conf(row.get('AI_Confidence'))}
         {format_conf(row.get('OLBG_Confidence'))}
         {format_conf(row.get('Oddspedia_Confidence'))}
-        {format_conf(row.get('Odds'))}
-        {format_conf(row.get('Result'))}
+        {format_odds(row.get('Odds'))}
+        {format_odds(row.get('Result'))}
     </tr>
     """
 
