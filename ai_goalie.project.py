@@ -432,19 +432,20 @@ def olbg_get(today):
             competition = match.find_element(By.CSS_SELECTOR, "p.text-sm.truncate").text.strip()
             match_time = match.find_element(By.TAG_NAME, "time").get_attribute("datetime")
             win_info = match.find_element(By.CSS_SELECTOR, "b.text-xs.truncate").text.strip()
-
+            odds = match.find_element(By.CSS_SELECTOR, "span.ui-odds")
+            odds = odds.get_attribute("data-decimal")
             try:
                 conf_style = match.find_element(By.CSS_SELECTOR, "div[style*='--confidence']").get_attribute("style")
                 confidence = re.search(r"(\d+)%", conf_style).group(1) if conf_style else ""
             except:
                 confidence = ""
 
-            try:
-                comments = match.find_element(By.CSS_SELECTOR, "span.text-xs.flex").text.strip()
-            except:
-                comments = "0"
+            # try:
+            #     comments = match.find_element(By.CSS_SELECTOR, "span.text-xs.flex").text.strip()
+            # except:
+            #     comments = "0"
 
-            data.append([fixture, pick, competition, match_time, win_info, confidence, comments])
+            data.append([fixture, pick, competition, match_time, win_info, confidence, odds])
 
         except Exception as e:
             print("Skipping match:", e)
@@ -452,7 +453,7 @@ def olbg_get(today):
     # Only save if data is collected
     if data:
         df = pd.DataFrame(data, columns=[
-            "Fixture", "Pick", "Competition", "Time", "Win Info", "Confidence %", "Comments"
+            "Fixture", "Pick", "Competition", "Time", "Win Info", "Confidence %", "Odds"
         ])
         save_name = get_save_path(f"{today}_olbg")
         df.to_excel(save_name, index=False)
@@ -531,6 +532,7 @@ def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file):
         if not olbg_match.empty:
             # Found a match: take the confidence (first one if multiple exist)
             olbg_confidence = olbg_match.iloc[0]['Confidence %']
+            odds = olbg_match.iloc[0]['Odds']
 
         # --- Check Oddspedia ---
         # Find Oddspedia rows where the Oddspedia Pick Text contains any word from the AI Goalie tokens
@@ -583,6 +585,7 @@ def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file):
 yesterday = int(today) -1
 yesterday = f"0{str(yesterday)}"
 # oddspedia_get(today)
+olbg_get(today)
 compare_confidence_sources(f"{today}_fixtures.xlsx",f"{today}_olbg_fixtures.xlsx",f"{today}_oddspedia_fixtures.xlsx")
 
 # compare_confidence_sources(f"{yesterday}_fixtures.xlsx","{today}_olbg_fixtures.xlsx","{today}_oddspedia_fixtures.xlsx")
