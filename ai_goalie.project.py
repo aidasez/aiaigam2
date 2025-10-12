@@ -300,7 +300,7 @@ def oddspedia_get(today):
         try:
             # Absolute XPath provided by user
             CONSENSUS_BUTTON_XPATH = "/html/body/div[1]/div[2]/div/div[1]/div[2]/div[2]/div[2]/div/main/div[3]/div[1]/div[2]/ul/li[2]/button"
-            
+            wait = WebDriverWait(driver, 5)
             consensus_tab = wait.until(
                 EC.element_to_be_clickable((By.XPATH, CONSENSUS_BUTTON_XPATH))
             )
@@ -569,8 +569,6 @@ def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file):
 
 yesterday = int(today) -1
 yesterday = f"0{str(yesterday)}"
-ai_goalie_get(today)
-olbg_get(today)
 oddspedia_get(today)
 compare_confidence_sources(f"{today}_fixtures.xlsx",f"{today}_olbg_fixtures.xlsx",f"{today}_oddspedia_fixtures.xlsx")
 
