@@ -38,7 +38,10 @@ def create_html_table_row(row):
         s = str(value).strip()
         return f'<td class="px-6 py-4 text-center font-semibold text-blue-600">{s if s.endswith("%") else s+"%"}</td>'
     def format_odds(value):
-        return '<td class="px-6 py-4 text-center text-gray-400">N/A</td>'
+        if pd.isna(value) or str(value).strip() == '':
+            return '<td class="px-6 py-4 text-center text-gray-400">N/A</td>'
+        s = str(value).strip()
+        return f'<td class="px-6 py-4 text-center font-semibold text-green-600">{value}</td>'
     return f"""
     <tr class="bg-white border-b hover:bg-gray-50 transition-colors duration-150">
         <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{fixture}</td>
