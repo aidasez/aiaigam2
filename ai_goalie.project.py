@@ -282,7 +282,6 @@ def ai_goalie_get(today):
     testas.append(ws[f"L{last_row + 1}"].value)
 
     wb.save(save_name)
-
 def oddspedia_get(today):
     """
     Scrapes football betting tips from Oddspedia using the globally defined driver.
@@ -324,6 +323,16 @@ def oddspedia_get(today):
             )
             tips_amount_option.click()
             sleep(5)  # Allow UI to update
+            odds_option = wait.until(
+                EC.element_to_be_clickable((By.XPATH, "//*[@id='breadcrumb-bar']/div/div[2]/ul/li[2]/div/button/span[2]"))
+            )
+            odds_option.click()
+            sleep(1)
+            eu_odds = wait.until(
+                EC.element_to_be_clickable((By.XPATH, "//*[@id='breadcrumb-bar']/div/div[2]/ul/li[2]/div/div/div[1]"))
+            )
+            eu_odds.click()
+            
         except Exception as e:
             print("Failed to sort by 'Tips Amount'. Scraping current list order:", e)
 
@@ -348,6 +357,8 @@ def oddspedia_get(today):
                 # 3. Pick
                 pick = match.find_element(By.CSS_SELECTOR, ".tip-by-consensus__meta").text.strip().replace("Full Time Result:", "").strip()
                 
+                # 3. Odds
+                odds = match.find_element(By.CSS_SELECTOR, "span.odd__value").text.strip()
                 # 🛑 NEW FILTER: Check if pick contains any exclusion keywords
                 skip_match = False
                 for keyword in EXCLUSION_KEYWORDS:
@@ -377,7 +388,7 @@ def oddspedia_get(today):
 
                 # Filter 2: Only include if confidence >= 60%
                 if int(confidence) >= 60:
-                    data.append([fixture, pick, competition, match_time, win_info, confidence])
+                    data.append([fixture, pick, competition, match_time, win_info, confidence,odds])
 
             except Exception as e:
                 # print(f"Skipping match due to error: {e}")
@@ -385,7 +396,7 @@ def oddspedia_get(today):
 
         # Step 4: Save to Excel
         if data:
-            df = pd.DataFrame(data, columns=["Fixture", "Pick", "Competition", "Time", "Win Info", "Confidence %"])
+            df = pd.DataFrame(data, columns=["Fixture", "Pick", "Competition", "Time", "Win Info", "Confidence %","Odds"])
             save_name = get_save_path(f"{today}_oddspedia")
             df.to_excel(save_name, index=False)
 
@@ -404,7 +415,6 @@ def oddspedia_get(today):
         print(f"A major error occurred during Oddspedia scraping: {e}")
     
     # The global driver is NOT quit here. It must be quit at the very end of the script.
-
 def olbg_get(today):
     data = []
     testas = []
@@ -503,6 +513,7 @@ def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file):
         ai_fixture = row['Fixture']
         ai_result = row['Result']
         
+        
         # Clean AI Goalie confidence
         ai_confidence_str = str(row['Win %']).replace('%', '').strip()
         olbg_confidence = None
@@ -528,6 +539,7 @@ def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file):
         
         if not oddspedia_match.empty:
             oddspedia_confidence = oddspedia_match.iloc[0]['Confidence %']
+            odds = oddspedia_match.iloc[0]['Odds']
         
         # 4. Append Result (Only if at least one other source has a matching pick)
         if olbg_confidence is not None or oddspedia_confidence is not None:
@@ -537,6 +549,7 @@ def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file):
                 "AI_Confidence": ai_confidence_str,
                 "OLBG_Confidence": olbg_confidence,
                 "Oddspedia_Confidence": oddspedia_confidence,
+                "Odds": odds,
                 "Result": result
             })
 
@@ -569,7 +582,7 @@ def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file):
 
 yesterday = int(today) -1
 yesterday = f"0{str(yesterday)}"
-oddspedia_get(today)
+# oddspedia_get(today)
 compare_confidence_sources(f"{today}_fixtures.xlsx",f"{today}_olbg_fixtures.xlsx",f"{today}_oddspedia_fixtures.xlsx")
 
 # compare_confidence_sources(f"{yesterday}_fixtures.xlsx","{today}_olbg_fixtures.xlsx","{today}_oddspedia_fixtures.xlsx")
