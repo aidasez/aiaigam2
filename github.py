@@ -35,6 +35,7 @@ def create_html_table_row(row):
     def format_conf(value):
         if pd.isna(value) or str(value).strip() == '':
             return '<td class="px-6 py-4 text-center text-gray-400">N/A</td>'
+        value = round(int(value))
         s = str(value).strip()
         return f'<td class="px-6 py-4 text-center font-semibold text-blue-600">{s if s.endswith("%") else s+"%"}</td>'
     def format_odds(value):

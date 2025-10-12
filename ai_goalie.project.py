@@ -471,8 +471,9 @@ def olbg_get(today):
         print("⚠️ No matches found!")
 SCRIPT_DIR = Path(__file__).parent.resolve()
 
-def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file):
-    
+def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file,today):
+    today_folder = datetime.now().strftime(f"%Y-%m-{yesterday}")
+    today = today
     # --- Helper function for word-based name cleaning and tokenization ---
     def get_match_tokens(name):
         """Extracts significant, clean, lowercase words for comparison."""
@@ -583,9 +584,8 @@ def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file):
     return df_comparison
 
 yesterday = int(today) -1
-yesterday = f"0{str(yesterday)}"
+yesterday = f"{str(yesterday)}"
 # oddspedia_get(today)
-olbg_get(today)
-compare_confidence_sources(f"{today}_fixtures.xlsx",f"{today}_olbg_fixtures.xlsx",f"{today}_oddspedia_fixtures.xlsx")
+compare_confidence_sources(f"{yesterday}_fixtures.xlsx",f"{yesterday}_olbg_fixtures.xlsx",f"{yesterday}_oddspedia_fixtures.xlsx",yesterday)
 
 # compare_confidence_sources(f"{yesterday}_fixtures.xlsx","{today}_olbg_fixtures.xlsx","{today}_oddspedia_fixtures.xlsx")
