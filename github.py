@@ -44,6 +44,8 @@ def create_html_table_row(row):
         {format_conf(row.get('AI_Confidence'))}
         {format_conf(row.get('OLBG_Confidence'))}
         {format_conf(row.get('Oddspedia_Confidence'))}
+        {format_conf(row.get('Odds'))}
+        {format_conf(row.get('Result'))}
     </tr>
     """
 
