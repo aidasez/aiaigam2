@@ -88,6 +88,8 @@ def generate_html_file(day_num):
 <th scope="col" class="px-6 py-3 text-center font-bold text-indigo-800">AI Confidence</th>
 <th scope="col" class="px-6 py-3 text-center font-bold text-indigo-800">OLBG Confidence</th>
 <th scope="col" class="px-6 py-3 text-center font-bold text-indigo-800">Oddspedia Confidence</th>
+<th scope="col" class="px-6 py-3 text-center font-bold text-indigo-800">Odds</th>
+<th scope="col" class="px-6 py-3 text-center font-bold text-indigo-800">Result</th>
 </tr>
 </thead>
 <tbody>

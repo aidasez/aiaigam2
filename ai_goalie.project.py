@@ -519,6 +519,7 @@ def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file):
         olbg_confidence = None
         oddspedia_confidence = None
         result = None
+        odds = None
         # if df_ai[]
         # --- Check OLBG ---
         # Find OLBG rows where the OLBG Pick Text contains any word from the AI Goalie tokens
@@ -536,7 +537,6 @@ def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file):
         oddspedia_match = df_oddspedia[
             df_oddspedia['Pick_Text'].apply(lambda x: any(token in x for token in ai_tokens))
         ]
-        
         if not oddspedia_match.empty:
             oddspedia_confidence = oddspedia_match.iloc[0]['Confidence %']
             odds = oddspedia_match.iloc[0]['Odds']
