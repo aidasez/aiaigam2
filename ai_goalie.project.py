@@ -196,21 +196,22 @@ def ai_goalie_get(today):
 
             # Result & total goals
             result = ""
-            # result_w = row.find_element(By.CSS_SELECTOR, "span.result-indicator.result-w")
-            # if result_w:
-            #     win = True
-            # elif len(result_w)==0:
-            #     result_l = row.find_element(By.CSS_SELECTOR, "span.result-indicator.result-l")
-            #     win = False
-            # if win:
-            #     result = "Y"
-            # else:
-            #     result = "X"
-            # if win == True or win == False:
-            #     parts = score.split(":")
-            #     total = int(parts[0]) + int(parts[1])
-            # else:
-            #     total = None
+            try:
+                correct_cell = row.find_element(By.CSS_SELECTOR, "td.correct span.result-indicator")
+                if "result-w" in correct_cell.get_attribute("class"):
+                    result = "✓"
+                elif "result-l" in correct_cell.get_attribute("class"):
+                    result = "X"
+            except Exception:
+                result = ""
+            if pick:
+                if home == pick:
+                    home = f"{home} {result}"
+                elif away == pick:
+                    away = f"{away} {result}"
+
+            fixture = f"{home} - {away}: {score}"
+
             parts = score.split(":")
             total = int(parts[0]) + int(parts[1])
 
@@ -592,5 +593,7 @@ def get_whole_day(day):
 yesterday = int(today) -1
 yesterday = f"{str(yesterday)}"
 
-update_day(yesterday)
-get_whole_day(today)
+# update_day(yesterday)
+# get_whole_day(today)
+
+ai_goalie_get(yesterday)
