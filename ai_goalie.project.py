@@ -470,9 +470,8 @@ def olbg_get(today):
     else:
         print("⚠️ No matches found!")
 SCRIPT_DIR = Path(__file__).parent.resolve()
-
 def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file,today):
-    today_folder = datetime.now().strftime(f"%Y-%m-{yesterday}")
+    today_folder = datetime.now().strftime(f"%Y-%m-{today}")
     today = today
     # --- Helper function for word-based name cleaning and tokenization ---
     def get_match_tokens(name):
@@ -582,10 +581,16 @@ def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file,today):
     print(f"Results saved to {today}_combined_confidence.xlsx")
     
     return df_comparison
-
+def update_day(day):
+    ai_goalie_get(day)
+    compare_confidence_sources(f"{day}_fixtures.xlsx",f"{day}_olbg_fixtures.xlsx",f"{day}_oddspedia_fixtures.xlsx",day)
+def get_whole_day(day):
+    ai_goalie_get(day)
+    oddspedia_get(day)
+    olbg_get(day)
+    compare_confidence_sources(f"{day}_fixtures.xlsx",f"{day}_olbg_fixtures.xlsx",f"{day}_oddspedia_fixtures.xlsx",day)
 yesterday = int(today) -1
 yesterday = f"{str(yesterday)}"
-# oddspedia_get(today)
-compare_confidence_sources(f"{yesterday}_fixtures.xlsx",f"{yesterday}_olbg_fixtures.xlsx",f"{yesterday}_oddspedia_fixtures.xlsx",yesterday)
 
-# compare_confidence_sources(f"{yesterday}_fixtures.xlsx","{today}_olbg_fixtures.xlsx","{today}_oddspedia_fixtures.xlsx")
+update_day(yesterday)
+get_whole_day(today)
