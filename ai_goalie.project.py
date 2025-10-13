@@ -595,5 +595,5 @@ yesterday = f"{str(yesterday)}"
 
 # update_day(yesterday)
 # get_whole_day(today)
-
-ai_goalie_get(yesterday)
+day = yesterday
+compare_confidence_sources(f"{day}_fixtures.xlsx",f"{day}_olbg_fixtures.xlsx",f"{day}_oddspedia_fixtures.xlsx",day)
