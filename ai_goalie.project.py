@@ -593,7 +593,7 @@ def get_whole_day(day):
 yesterday = int(today) -1
 yesterday = f"{str(yesterday)}"
 
-# update_day(yesterday)
-# get_whole_day(today)
-day = yesterday
-compare_confidence_sources(f"{day}_fixtures.xlsx",f"{day}_olbg_fixtures.xlsx",f"{day}_oddspedia_fixtures.xlsx",day)
+update_day(yesterday)
+get_whole_day(today)
+# day = yesterday
+# compare_confidence_sources(f"{day}_fixtures.xlsx",f"{day}_olbg_fixtures.xlsx",f"{day}_oddspedia_fixtures.xlsx",day)
