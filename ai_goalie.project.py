@@ -155,11 +155,11 @@ def ai_goalie_get_past(i: int):
     testas.append(ws[f"L{last_row + 1}"].value)
 
     wb.save(save_name)
-def ai_goalie_get(today):
+def ai_goalie_get(day):
     data = []
     testas = []
 
-    driver.get(f"https://ai-goalie.com/{today}.10.2025.html")
+    driver.get(f"https://ai-goalie.com/{day}.10.2025.html")
 
     # Load cookies
 
@@ -244,7 +244,7 @@ def ai_goalie_get(today):
     pf = pd.DataFrame(data,
                       columns=["Date", "Fixture", "XG", "Pick", "Goals_Pick",
                                "Win %", "Result", "Total", "Under"])
-    save_name = get_save_path(f"{today}_ai.full")
+    save_name = get_save_path(f"{day}_ai.full")
     pf.to_excel(save_name, index=False)
     # Filter by Win % >= 60
     data_clean = []
@@ -260,7 +260,7 @@ def ai_goalie_get(today):
     df = pd.DataFrame(data_clean,
                       columns=["Date", "Fixture", "XG", "Pick", "Goals_Pick",
                                "Win %", "Result", "Total", "Under"])
-    save_name = get_save_path(f"{today}")
+    save_name = get_save_path(f"{day}")
     df.to_excel(save_name, index=False)
 
     # Open with openpyxl to add formulas
@@ -283,7 +283,7 @@ def ai_goalie_get(today):
     testas.append(ws[f"L{last_row + 1}"].value)
 
     wb.save(save_name)
-def oddspedia_get(today):
+def oddspedia_get(day):
     """
     Scrapes football betting tips from Oddspedia using the globally defined driver.
     Filters for consensus tips with 60% confidence or higher.
@@ -398,7 +398,7 @@ def oddspedia_get(today):
         # Step 4: Save to Excel
         if data:
             df = pd.DataFrame(data, columns=["Fixture", "Pick", "Competition", "Time", "Win Info", "Confidence %","Odds"])
-            save_name = get_save_path(f"{today}_oddspedia")
+            save_name = get_save_path(f"{day}_oddspedia")
             df.to_excel(save_name, index=False)
 
             wb = load_workbook(save_name)
@@ -416,7 +416,7 @@ def oddspedia_get(today):
         print(f"A major error occurred during Oddspedia scraping: {e}")
     
     # The global driver is NOT quit here. It must be quit at the very end of the script.
-def olbg_get(today):
+def olbg_get(day):
     data = []
     testas = []
     driver.get("https://www.olbg.com/betting-tips/Football/1")
@@ -456,7 +456,7 @@ def olbg_get(today):
         df = pd.DataFrame(data, columns=[
             "Fixture", "Pick", "Competition", "Time", "Win Info", "Confidence %", "Odds"
         ])
-        save_name = get_save_path(f"{today}_olbg")
+        save_name = get_save_path(f"{day}_olbg")
         df.to_excel(save_name, index=False)
 
         wb = load_workbook(save_name)
@@ -471,9 +471,8 @@ def olbg_get(today):
     else:
         print("⚠️ No matches found!")
 SCRIPT_DIR = Path(__file__).parent.resolve()
-def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file,today):
-    today_folder = datetime.now().strftime(f"%Y-%m-{today}")
-    today = today
+def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file,day):
+    day_folder = datetime.now().strftime(f"%Y-%m-{day}")
     # --- Helper function for word-based name cleaning and tokenization ---
     def get_match_tokens(name):
         """Extracts significant, clean, lowercase words for comparison."""
@@ -560,8 +559,8 @@ def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file,today):
     df_comparison = pd.DataFrame(comparison_data)
     
     if df_comparison.empty:
-        save_name = f"{today}_combined_confidence"
-        save_name = os.path.join(today_folder, f"{save_name}.xlsx")
+        save_name = f"{day}_combined_confidence"
+        save_name = os.path.join(day_folder, f"{save_name}.xlsx")
         df_comparison.to_excel(save_name, index=False)
         print("Found 0 common picks. No output file created.")
         return df_comparison
@@ -576,7 +575,7 @@ def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file,today):
     # file_name = f"{today}_combined_confidence_xlsx"
     # full_path = save_folder / file_name
    
-    save_name = f"{today}_combined_confidence"
+    save_name = f"{day}_combined_confidence"
     save_name = os.path.join(today_folder, f"{save_name}.xlsx")
     df_comparison.to_excel(save_name, index=False)
     print(f"Results saved to {today}_combined_confidence.xlsx")
@@ -586,14 +585,15 @@ def update_day(day):
     ai_goalie_get(day)
     compare_confidence_sources(f"{day}_fixtures.xlsx",f"{day}_olbg_fixtures.xlsx",f"{day}_oddspedia_fixtures.xlsx",day)
 def get_whole_day(day):
-    # ai_goalie_get(day)
-    # oddspedia_get(day)
-    # olbg_get(day)
+    ai_goalie_get(day)
+    oddspedia_get(day)
+    olbg_get(day)
     compare_confidence_sources(f"{day}_fixtures.xlsx",f"{day}_olbg_fixtures.xlsx",f"{day}_oddspedia_fixtures.xlsx",day)
 yesterday = int(today) -1
 yesterday = f"{str(yesterday)}"
 
+update_day(yesterday)
+get_whole_day(today)
 
-get_whole_day(yesterday)
 # day = yesterday
 # compare_confidence_sources(f"{day}_fixtures.xlsx",f"{day}_olbg_fixtures.xlsx",f"{day}_oddspedia_fixtures.xlsx",day)
