@@ -20,9 +20,10 @@ driver = uc.Chrome(options=options)
 counts = 0
 data = []
 testas = []
-today_folder = datetime.now().strftime("%Y-%m-%d")
+# today_folder = datetime.now().strftime("%Y-%m-%d")
 
-def get_save_path(source_name):
+def get_save_path(source_name,day):
+    today_folder = datetime.now().strftime(f"%Y-%m-{day}")
     os.makedirs(today_folder, exist_ok=True)
     return os.path.join(today_folder, f"{source_name}_fixtures.xlsx")
 
@@ -132,7 +133,7 @@ def ai_goalie_get_past(i: int):
     df = pd.DataFrame(data_clean,
                       columns=["Date", "Fixture", "XG", "Pick", "Goals_Pick",
                                "Win %", "Result", "Total", "Under"])
-    save_name = get_save_path(f"{today}_ai")
+    save_name = get_save_path(f"{today}_ai",day)
     df.to_excel(save_name, index=False)
 
     # Open with openpyxl to add formulas
@@ -244,7 +245,7 @@ def ai_goalie_get(day):
     pf = pd.DataFrame(data,
                       columns=["Date", "Fixture", "XG", "Pick", "Goals_Pick",
                                "Win %", "Result", "Total", "Under"])
-    save_name = get_save_path(f"{day}_ai.full")
+    save_name = get_save_path(f"{day}_ai.full",day)
     pf.to_excel(save_name, index=False)
     # Filter by Win % >= 60
     data_clean = []
@@ -260,7 +261,7 @@ def ai_goalie_get(day):
     df = pd.DataFrame(data_clean,
                       columns=["Date", "Fixture", "XG", "Pick", "Goals_Pick",
                                "Win %", "Result", "Total", "Under"])
-    save_name = get_save_path(f"{day}")
+    save_name = get_save_path(f"{day}",day)
     df.to_excel(save_name, index=False)
 
     # Open with openpyxl to add formulas
@@ -398,7 +399,7 @@ def oddspedia_get(day):
         # Step 4: Save to Excel
         if data:
             df = pd.DataFrame(data, columns=["Fixture", "Pick", "Competition", "Time", "Win Info", "Confidence %","Odds"])
-            save_name = get_save_path(f"{day}_oddspedia")
+            save_name = get_save_path(f"{day}_oddspedia",day)
             df.to_excel(save_name, index=False)
 
             wb = load_workbook(save_name)
@@ -456,7 +457,7 @@ def olbg_get(day):
         df = pd.DataFrame(data, columns=[
             "Fixture", "Pick", "Competition", "Time", "Win Info", "Confidence %", "Odds"
         ])
-        save_name = get_save_path(f"{day}_olbg")
+        save_name = get_save_path(f"{day}_olbg",day)
         df.to_excel(save_name, index=False)
 
         wb = load_workbook(save_name)
