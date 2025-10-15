@@ -486,7 +486,7 @@ def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file,day):
         # Filter out very short words that are likely generic
         return {word for word in words if len(word) > 2}
     # -----------------------------------------------------------------
-    today_path = SCRIPT_DIR / today_folder
+    today_path = SCRIPT_DIR / day_folder
     # 1. Load DataFrames
     try:
         df_ai = pd.read_excel(today_path / ai_goalie_file)
@@ -576,9 +576,9 @@ def compare_confidence_sources(ai_goalie_file, olbg_file, oddspedia_file,day):
     # full_path = save_folder / file_name
    
     save_name = f"{day}_combined_confidence"
-    save_name = os.path.join(today_folder, f"{save_name}.xlsx")
+    save_name = os.path.join(day_folder, f"{save_name}.xlsx")
     df_comparison.to_excel(save_name, index=False)
-    print(f"Results saved to {today}_combined_confidence.xlsx")
+    print(f"Results saved to {day}_combined_confidence.xlsx")
     
     return df_comparison
 def update_day(day):
