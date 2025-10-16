@@ -1,1 +1,1 @@
-driver = uc.Chrome(options=options)
+update_day(yesterday)
