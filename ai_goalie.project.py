@@ -586,9 +586,9 @@ def update_day(day):
     ai_goalie_get(day)
     compare_confidence_sources(f"{day}_fixtures.xlsx",f"{day}_olbg_fixtures.xlsx",f"{day}_oddspedia_fixtures.xlsx",day)
 def get_whole_day(day):
-    # ai_goalie_get(day)
-    # oddspedia_get(day)
-    # olbg_get(day)
+    ai_goalie_get(day)
+    oddspedia_get(day)
+    olbg_get(day)
     compare_confidence_sources(f"{day}_fixtures.xlsx",f"{day}_olbg_fixtures.xlsx",f"{day}_oddspedia_fixtures.xlsx",day)
 yesterday = int(today) -1
 yesterday = f"{str(yesterday)}"
