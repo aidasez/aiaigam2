@@ -593,7 +593,7 @@ def get_whole_day(day):
 yesterday = int(today) -1
 yesterday = f"{str(yesterday)}"
 
-# update_day(yesterday)
+update_day(yesterday)
 get_whole_day(today)
 
 # day = yesterday
