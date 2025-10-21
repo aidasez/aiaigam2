@@ -227,18 +227,15 @@ def ai_goalie_get(day):
             else:
                 goals_pick = None
                 under = None
-
+            print(data)
             # Append data if correct day
-            parts = match_date.split()
-            if parts:
-                try:
-                    day = int(parts[-1])
-                    data.append([
+            try:
+                data.append([
                             match_date, fixture, expected_goals, pick,
                             goals_pick, win_percent, result, total, under
                         ])
-                except ValueError:
-                    continue
+            except ValueError:
+                continue
         except Exception as e:
             continue
             # print("Skipping row due to error:", e)
@@ -247,6 +244,7 @@ def ai_goalie_get(day):
                                "Win %", "Result", "Total", "Under"])
     save_name = get_save_path(f"{day}_ai.full",day)
     pf.to_excel(save_name, index=False)
+    print(data)
     # Filter by Win % >= 60
     data_clean = []
     for row in data:
@@ -586,12 +584,13 @@ def update_day(day):
     ai_goalie_get(day)
     compare_confidence_sources(f"{day}_fixtures.xlsx",f"{day}_olbg_fixtures.xlsx",f"{day}_oddspedia_fixtures.xlsx",day)
 def get_whole_day(day):
-    
+    ai_goalie_get(day)
     oddspedia_get(day)
     olbg_get(day)
     compare_confidence_sources(f"{day}_fixtures.xlsx",f"{day}_olbg_fixtures.xlsx",f"{day}_oddspedia_fixtures.xlsx",day)
 yesterday = int(today) -1
 yesterday = f"{str(yesterday)}"
+
 
 get_whole_day(today)
 
