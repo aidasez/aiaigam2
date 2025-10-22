@@ -250,7 +250,7 @@ def ai_goalie_get(day):
     for row in data:
         try:
             win_val = float(row[5].replace("%", "").strip())
-            if win_val >= 55:
+            if win_val >= 52:
                 data_clean.append(row)
         except Exception:
             continue
@@ -591,7 +591,8 @@ def get_whole_day(day):
 yesterday = int(today) -1
 yesterday = f"{str(yesterday)}"
 
-today = int(today)+1
+# today = int(today)+1
+update_day(yesterday)
 get_whole_day(today)
 
 # day = yesterday
