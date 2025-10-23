@@ -9,7 +9,7 @@ import subprocess
 SCRIPT_DIR = Path(__file__).parent.resolve()
 today = datetime.now()
 today_day = today.day
-today_day = int(today_day) +1
+today_day = int(today_day)
 today_str = today.strftime("%Y-%m-%d")
 
 # Helper: get folder path for a given day number
